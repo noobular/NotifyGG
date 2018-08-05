@@ -394,7 +394,7 @@ bot.on("message", async message => {
                     message.member.addRole(Role_AlphaTester); // add the role
                     c('[Role Given]',message.member.displayName+" Gained Alpha-Tester.",'purple'); // console log they've gained it
                     addAlphaCount(); // add to the total alpha roles given file
-                    return message.channel.send("You're an Alpha-Tester now!) // reply in chat that they've gotten the role
+                    return message.channel.send("You're an Alpha-Tester now!") // reply in chat that they've gotten the role
                 }else{
                     return message.channel.send("You're already an Alpha-Tester.") // they've already got the role
                 }
