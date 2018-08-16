@@ -10,6 +10,17 @@ const clear = require('clear');
 clear(); // Clears the console so it's easier to read :)
 let startupTime = new Date();
 
+
+config.host.forEach(function(host){
+    ping.sys.probe(host, function(isAlive){ // pings
+        let msg = isAlive ? 'Notify.Me is online!' : 'Notify.Me is dead!'; // dead/alive
+        //message.channel.send(msg); // send the response to chat
+        c('[Ping]',msg,'yellow'); // log the response
+    });
+});
+
+
+
 bot_icon = 'https://cdn.discordapp.com/attachments/465542663198736384/465542947434397706/noitfybot.png';
 jamies_face = 'https://static-cdn.jtvnw.net/jtv_user_pictures/b707d55e-f379-495a-a6f2-39250a69d11d-profile_image-300x300.jpg';
 
@@ -499,7 +510,11 @@ bot.on("message", async message => {
                     message.member.addRole(Role_AlphaTester); // add the role
                     c('[Role Given]',message.member.displayName+" Gained Alpha-Tester.",'purple'); // console log they've gained it
                     addAlphaCount(); // add to the total alpha roles given file
+<<<<<<< HEAD
                     return message.channel.send("You're an Alpha-Tester now! | Give me Notify.me/James") // reply in chat that they've gotten the role
+=======
+                    return message.channel.send("You're an Alpha-Tester now!") // reply in chat that they've gotten the role
+>>>>>>> f5f9d492002541cab7293e45e2fa3da06b55fa8f
                 }else{
                     return message.channel.send("You're already an Alpha-Tester. | Give me Notify.me/James") // they've already got the role
                 }
