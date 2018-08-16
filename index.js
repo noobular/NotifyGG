@@ -8,6 +8,7 @@ const request = require('request');
 const clear = require('clear');
 
 clear(); // Clears the console so it's easier to read :)
+let startupTime = new Date();
 
 bot_icon = 'https://cdn.discordapp.com/attachments/465542663198736384/465542947434397706/noitfybot.png';
 jamies_face = 'https://static-cdn.jtvnw.net/jtv_user_pictures/b707d55e-f379-495a-a6f2-39250a69d11d-profile_image-300x300.jpg';
@@ -52,14 +53,14 @@ const menu_help_1 = new Discord.RichEmbed()
 .addField("Kick User", "/kick @user Reason", true)
 .addField("Ban User", "/ban @user Reason", true)
 .addField("Help", "/help Page#", true)
-.setFooter("Bot Created by : Noobular | Page 1/2",jamies_face);
+.setFooter("Bot Created by : Noobular | Page 1/2 | Give me Notify.me/James",jamies_face);
 
 const menu_help_2 = new Discord.RichEmbed()
 .setColor(primary_color)
 .setAuthor("Notify.gg Help Menu",bot_icon)
 .addField("Ping the bot :)", "/ping")
 .addBlankField(true)
-.setFooter("Bot Created by : Noobular | Page 2/2",jamies_face);
+.setFooter("Bot Created by : Noobular | Page 2/2 | Give me Notify.me/James",jamies_face);
 //////////////////////////////////////////////////////////////////////////////////////////
 
 //console.log but shorter, if you leave it blank its a blank space in the terminal
@@ -100,6 +101,47 @@ function c(type,data,color){
         console.log("  ");
     }
 };
+
+function checkTime(){ // Heroku turns off bot after 30 minutes of inactivity so this should prevent that from happening assuming someone or something chats within 30 minutes
+    var timeToCheck = 1 * 60000; // how long do you want to wait for a check? || First Number = Minutes || Second 60000, is the miliseconds in a minute, thus setting minutes in miliseconds ||
+    var now = new Date();
+    var PastTime = new Date(now - timeToCheck); // what was the time, you want to check for
+    
+    c("[Current Time]",now,"yellow");
+    c("[Check Time]",startupTime,"yellow");
+    c();
+
+    if (startupTime < PastTime) {
+        // Run this code block if its "timeToCheck" amount of time has passed
+        pingserver();
+        startupTime = new Date();
+    }
+}
+
+function pingserver(type){
+
+    switch(type){
+        case 0: // Console Version
+            config.host.forEach(function(host){
+                ping.sys.probe(host, function(isAlive){ // pings
+                    let msg = isAlive ? 'Notify.Me is online!' : 'Notify.Me is dead!'; // dead/alive
+                    //message.channel.send(msg); // send the response to chat
+                    c('[Ping]',msg,'yellow'); // log the response
+                });
+            });
+            break;
+        default:
+            config.host.forEach(function(host){
+                ping.sys.probe(host, function(isAlive){ // pings
+                    let msg = isAlive ? 'Notify.Me is online!' : 'Notify.Me is dead!'; // dead/alive
+                    //message.channel.send(msg); // send the response to chat
+                    c('[Ping]',msg,'yellow'); // log the response
+                });
+            });
+    }
+}
+
+pingserver()   // First ping to see if notify is running (only shown in the console)
 
 function generateHistory(type,name,time,admin,reason){
     if(admin){ // does something exist in the admin position of the parameters, if not this isn't staff related and is just history
@@ -145,7 +187,10 @@ function checkFilesExist(){
 
 function sendgif(message,search){
     let url;
+
     if(search !== undefined){
+        search = search.replace(/\?/g,'')
+        console.log(search);
          url = "https://api.giphy.com/v1/gifs/search?api_key="+config.giphykey+"&q="+search+"&limit=250&offset=0&rating=G&lang=en"
     }else{
          url = "https://api.giphy.com/v1/gifs/random?api_key="+config.giphykey+"&tag=&rating=G"
@@ -157,10 +202,27 @@ function sendgif(message,search){
         function (error, response, body) {
             if (!error && response.statusCode == 200) {
                 let data = JSON.parse(body)
+                //console.log(data.data[randomimg].url);
                 if(search !== undefined){
-                    message.channel.send(data.data[randomimg].images.original.url)
+                    if(data.data){
+                        if(data.data[randomimg].images !== undefined){
+                            message.channel.send(data.data[randomimg].images.original.url)
+                        }else{
+                            message.channel.send("No results for that search...")
+                        }
+                    }else{
+                        message.channel.send("No results for that search...")
+                    }
                 }else{
-                    message.channel.send(data.data.images.original.url)
+                    if(data.data){
+                        if(data.data.images !== undefined){
+                            message.channel.send(data.data.images.original.url)
+                        }else{
+                            message.channel.send("No results for that search...")
+                        }
+                    }else{
+                        message.channel.send("No results for that search...")
+                    }
                 }
             }
         }
@@ -213,12 +275,21 @@ bot.on("ready", () => {
     });
 });
 
+bot.on("UserConnection",(user)=>{
+    checkTime();
+
+});
+
 // Event handler; On Ban
 bot.on("guildBanAdd", (guild,user)=>{
+    checkTime();
+
 });
 
 // Event handler; on channel update call this event
 bot.on("channelUpdate", (oldChannel, newChannel)=>{
+    checkTime();
+
     if(oldChannel.name != newChannel.name){ // check for the name change
         c('[Channel Updated]',oldChannel.name + " => " + newChannel.name,'purple') // log the name change
         newChannel.guild.channels.find("name","history").send(generateHistory('Updated Channel',oldChannel.name + " => " + newChannel.name,currTime())); // send change to history
@@ -228,29 +299,39 @@ bot.on("channelUpdate", (oldChannel, newChannel)=>{
 
 // Event handler; On channel deletion this function is called
 bot.on("channelDelete", (channel)=>{
+    checkTime();
+
     channel.guild.channels.find("name","history").send(generateHistory('Channel Deletion',channel.name,currTime()));
     c('[Channel Deleted]',channel.name + " @ " + currTime(),'red');
 });
 
 // Event handler; On channel deletion this function is called
 bot.on("roleDelete", (role)=>{
+    checkTime();
+
     role.guild.channels.find("name","history").send(generateHistory('Role Deletion',role.name,currTime()));
     c('[Role Deleted]',role.name + " @ " + currTime(),'red');
 });
 
 // Joining the discord channel
 bot.on("guildCreate", guild => {
+    checkTime();
+
     c('[Guild Join]',`${guild.name} (${guild.id}), owned by ${guild.owner.user.username} (${guild.owner.user.id}).`,'red');
 });
 
 // Event Handler: When an emoji is removed off the server's emoji list
 bot.on("emojiDelete", (emoji) => {
+    checkTime();
+
     emoji.guild.channels.find("name","history").send(generateHistory('Emoji Deletion',emoji.name,currTime()));
     c('[Emoji Deleted]',emoji.name + " @ " + currTime(),'red');
 });
 
 // New member joined the discord channel, what should we do when the event is triggered?
 bot.on("guildMemberAdd", (member) => {
+    checkTime();
+
     //member.guild.channels.find("name","history").send(`[New Member] "${member}"\n ${member.joinedAt}`);
     member.guild.channels.find("name","history").send(generateHistory('New Member',member.user.username,member.joinedAt));
     c('[New User]',`"${member.user.username}" @ ${member.joinedAt}`,'green');
@@ -258,12 +339,16 @@ bot.on("guildMemberAdd", (member) => {
 
 // Event Handler: creation of a new role!
 bot.on("roleCreate", (role) => {
+    checkTime();
+
     role.guild.channels.find("name","history").send(generateHistory('New Role',role.name,role.createddAt)); // send history of role creation to history channel
     c('[New Role]',`"${role.name}" @ ${role.createdAt}`,'cyan'); // log it
 });
 
 // Event Handler: when a role is updated.
 bot.on("roleUpdate", (oldRole,newRole) => {
+    checkTime();
+
     if(oldRole.name != newRole.name){ // check for the name change
         c('[Role Updated]',oldRole.name + " => " + newRole.name,'purple') // log the name change
         newRole.guild.channels.find("name","history").send(generateHistory('Updated Role',oldRole.name + " => " + newRole.name,currTime())); // send change to history
@@ -273,6 +358,8 @@ bot.on("roleUpdate", (oldRole,newRole) => {
 
 // Event Handler: New Channel Created
 bot.on("channelCreate", channel => {
+    checkTime();
+
     let name_channel = channel.name; // make it a letiable so I can change the first letter to uppercase
     name_channel = name_channel.charAt(0).toUpperCase() + name_channel.slice(1); // do that ^
     channel.guild.channels.find("name","history").send(generateHistory('Channel Creation',name_channel,channel.createdAt)); 
@@ -281,6 +368,7 @@ bot.on("channelCreate", channel => {
 
 // hook for a message in chat thats been recieved
 bot.on("message", async message => { 
+    checkTime();
 
     if(message.author.bot || message.system) return; // Ignore bots
     
@@ -329,11 +417,28 @@ bot.on("message", async message => {
             // for every host in the host array, check to see if the bot can connect
             config.host.forEach(function(host){
                 ping.sys.probe(host, function(isAlive){ // pings
-                    let msg = isAlive ? 'Notify.Me is online!' : 'Notify.Me is dead!'; // dead/alive
-                    message.channel.send(msg); // send the response to chat
+                    switch(isAlive){
+                        case true:
+                             msg = "Notify.me is Online!"
+                            break;
+                        case false:
+                             msg = "Notify.me is Offline!"
+                            break;
+                        default:
+                             msg = "Something went wrong while trying to ping.."
+                            break;
+                    }
+                    let resultwindow = new Discord.RichEmbed()
+                    .setColor(primary_color)
+                    .setAuthor("Notify.gg Ping...",bot_icon)
+                    .addField("Ping Result", msg)
+                    .setFooter("Bot Created by : Noobular | Give me notify.me/James ",jamies_face);
+                    message.channel.send(resultwindow); // send the response to chat
                     c('[Ping]',msg,'yellow'); // log the response
                 });
             });
+
+
             return;
         }
 
@@ -394,15 +499,15 @@ bot.on("message", async message => {
                     message.member.addRole(Role_AlphaTester); // add the role
                     c('[Role Given]',message.member.displayName+" Gained Alpha-Tester.",'purple'); // console log they've gained it
                     addAlphaCount(); // add to the total alpha roles given file
-                    return message.channel.send("You're an Alpha-Tester now! | Roles Given: " + NewCount) // reply in chat that they've gotten the role
+                    return message.channel.send("You're an Alpha-Tester now! | Give me Notify.me/James") // reply in chat that they've gotten the role
                 }else{
-                    return message.channel.send("You're already an Alpha-Tester.") // they've already got the role
+                    return message.channel.send("You're already an Alpha-Tester. | Give me Notify.me/James") // they've already got the role
                 }
             }
         }
         else if(cmd==="members" || cmd ==="count"){
             // Fetch guild members
-            return message.channel.send("Server Count: " + message.guild.members.size);
+            return message.channel.send("Server Count: " + message.guild.members.size + " | Give me Notify.me/James");
         } 
         else if(cmd==="gif"){
             // send random gif
