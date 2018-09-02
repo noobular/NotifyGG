@@ -67,7 +67,7 @@ const menu_help_2 = new Discord.RichEmbed()
 function c(type,data,color){
     if(data!==undefined){
         if(color !== undefined){
-            // logs the type in color then the text as the default color
+            // logs the type in color then the text as the default color ex: type: [SERVER]
             switch(color){
                 case "red":
                     console.log(clc.red(type) + " " + data);
@@ -475,7 +475,7 @@ bot.on("message", async message => {
             let timeout = new Date();
             // Most of this command is identical to kick, except that here we'll only let admins do it.
             // In the real world mods could ban too, but this is just an example, right? ;)
-            if(!message.member.roles.some(r=>["Lead Dev","Developers"].includes(r.name)) )
+            if(!message.member.roles.some(r=>["Lead Dev","Developers","moderator"].includes(r.name)) )
             return message.reply("Sorry, you don't have permissions to use this!");
             
             let member = message.mentions.members.first();
