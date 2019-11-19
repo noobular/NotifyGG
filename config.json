@@ -1,6 +1,6 @@
 {
-    "token":"NDY1NTQzMDQ3NDc2OTM2NzM1.DiPE3A.GDR4ritF68UgZR6VcvDDmDFCeIc",
-    "owner": "156418550620225536",
+    "token":"xx",
+    "owner": "xx", // Owner of the bot, not the owner of the server
     "prefix": "/",
     "host": ["notify.gg"],
     "giphykey": "egbVXfBpXl70ngcQCy0XpjBNsSQPbIdP"
