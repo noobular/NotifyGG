@@ -1,6 +1,6 @@
 {
     "token":"xx",
-    "owner": "xx", // Owner of the bot, not the owner of the server
+    "owner": "xx",
     "prefix": "/",
     "host": ["notify.gg"],
     "giphykey": "egbVXfBpXl70ngcQCy0XpjBNsSQPbIdP"
